@@ -1,2 +1,2 @@
 # ACSS SIGA-BI System
-Contains the ASL description of the ACSS SIGA-BI system
+Contains a simplified requirements specification of the ACSS SIGA-BI system, written in ASL
