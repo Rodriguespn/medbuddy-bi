@@ -1,2 +1,2 @@
-# MEDBUddy BI Application
-Contains a simplified requirements specification of the ACSS SIGA-BI system, written in ASL
+# MEDBuddy BI Application
+Contains a simplified requirements specification of the MEDBuddy BI application, written in ASL
