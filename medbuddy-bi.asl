@@ -1,9 +1,9 @@
-Package bi_siga
+Package medbuddy_bi
 
 Import bi.bi_types
 
 
-System bisiga: Application 
+System medbuddybi: Application 
 
 /*****************************
     Multi-dimensional model
