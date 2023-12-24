@@ -5,344 +5,230 @@ Import bi.bi_types
 
 System medbuddy_bi: Application 
 
-DataEnumeration enum_StoreTypes values (NewStore, SameStore)
+DataEnumeration Gender values (Male, Female)
+DataEnumeration States values (Booked, Held, Cancelled)
+DataEnumeration InstitutionTypes values (HealthCentre, Hospital)
 
-DataEntity Districts "Districts Dimension" : Master : BI_Dimension [
-  attribute DistrictID "DistrictID" : Integer [constraints (PrimaryKey NotNull Unique)]
-  attribute BusinessUnitID "BusinessUnitID" : Integer [constraints (NotNull)]
-  attribute District "District" : String(50) [constraints (NotNull)]
-  attribute DM "DM" : String(50) [constraints (NotNull)]
-  attribute DMPic "DM Pic" : String(100) [constraints (NotNull)]
-  attribute DMPicfl "DM Pic fl" : String(100) [constraints (NotNull)]
-  attribute DMImage "DMImage" : String(100) [constraints (NotNull)]
-  description "This dimension represents the various districts and associated attributes."
-]
-
-DataEntity Items "Items Dimension" : Master : BI_Dimension [
-  attribute ItemID "ItemID" : Integer [constraints (PrimaryKey NotNull Unique)]
-  attribute Segment "Segment" : String(50) [constraints (NotNull)]
-  attribute Category "Category" : String(50) [constraints (NotNull)]
-  attribute Buyer "Buyer" : String(50) [constraints (NotNull)]
-  attribute FamilyName "FamilyName" : String(50) [constraints (NotNull)]
-  description "This dimension represents different types of items and their attributes."
-]
-
-DataEntity _Time "Time Dimension" : Reference : BI_Dimension [
-  attribute ReportingPeriodID "ReportingPeriodID" : Integer [constraints (PrimaryKey NotNull Unique)]
-  attribute Period "Period" : String(20) [constraints (NotNull)]
-  attribute FiscalYear "FiscalYear" : Integer [constraints (NotNull)]
-  attribute FiscalMonth "FiscalMonth" : String(20) [constraints (NotNull)]
-  attribute Month "Month" : String(20) [constraints (NotNull)]
-  description "This dimension provides different time attributes for reporting."
-]
-
-DataEntity Stores "Stores Fact": Transaction : BI_Fact [
-  attribute LocationID "Location ID" : Integer [constraints (PrimaryKey NotNull Unique)]
-  attribute CityName "City Name" : String(50) [constraints (NotNull)]
-  attribute Territory "Territory" : String(50) [constraints (NotNull)]
-  attribute PostalCode "Postal Code" : String(10) [constraints (NotNull)]
-  attribute OpenDate "Open Date" : Date [constraints (NotNull)]
-  attribute SellingAreaSize "Selling Area Size" : Decimal [constraints (NotNull)]
-  attribute DistrictID "District ID" : Integer [constraints (NotNull ForeignKey(Districts))]
+DataEntity e_City "City" : Reference : BI_Dimension [
+  attribute id "UUID" : UUID [constraints (PrimaryKey NotNull Unique)]
+  attribute latitude "Latitude" : Decimal [constraints (NotNull)]
+  attribute longitude "Longitude" : Decimal [constraints (NotNull)]
   attribute Name "Name" : String(50) [constraints (NotNull)]
-  attribute StoreNumber "Store Number" : Integer [constraints (NotNull)]
-  attribute Chain "Chain" : String(50) [constraints (NotNull)]
-  attribute DM "DM" : String(50) [constraints (NotNull)]
-  attribute DMPic "DM Pic" : String(100) [constraints (NotNull)]
-  attribute OpenYear "Open Year" : Integer [constraints (NotNull)]
-  attribute StoreType "Store Type" : DataEnumeration enum_StoreTypes [constraints (NotNull)]
-  attribute OpenMonthNo "Open Month No" : Integer [constraints (NotNull)]
-  attribute OpenMonth "Open Month" : String(20) [constraints (NotNull)]
-  attribute AverageSellingAreaSize "Average Selling Area Size" : Decimal [formula details: sum(SellingAreaSize) tag (name "expression" value "average(SellingAreaSize)")]
-  attribute NewStores "New Stores" : Integer [formula details: count(Stores) tag (name "expression" value "count(if(StoreType = enum_StoreTypes.NewStore))")]
-  attribute NewStoresTarget "New Stores Target" : String(5) [defaultValue "14"]
-  attribute OpenStoreCount "Open Store Count" : Integer [formula details: count(Stores) tag (name "expression" value "count(Stores.OpenDate)")]
-  attribute TotalStores "Total Stores" : Integer [formula details: count(Stores)]
-  description "This fact table represents various attributes and measures related to stores."
-]
+  description "This dimension represents the details of a city" ]
 
-DataEntity Sales "Sales Fact" : Transaction : BI_Fact [
-  attribute ItemID "Item ID" : Integer [constraints (NotNull ForeignKey(Items))]
-  attribute LocationID "Location ID" : Integer [constraints (NotNull ForeignKey(Stores))]
-  attribute ReportingPeriodID "Reporting Period ID" : Integer [constraints (NotNull ForeignKey(_Time))]
-  attribute MonthID "Month ID" : Integer [constraints (NotNull)]
-  attribute ScenarioID "Scenario ID" : Integer [constraints (NotNull)]
-  attribute SumGrossMarginAmount "Sum Gross Margin Amount" : Decimal [constraints (NotNull)]
-  attribute SumMarkdownSalesDollars "Sum Markdown Sales Dollars" : Decimal [constraints (NotNull)]
-  attribute SumMarkdownSalesUnits "Sum Markdown Sales Units" : Decimal [constraints (NotNull)]
-  attribute SumRegularSalesDollars "Sum Regular Sales Dollars" : Decimal [constraints (NotNull)]
-  attribute SumRegularSalesUnits "Sum Regular Sales Units" : Decimal [constraints (NotNull)]
-  attribute LastYearSales "Last Year Sales" : Decimal [constraints (NotNull)]
-  attribute MarkdownSalesDollars "Markdown Sales Dollars" : Decimal [formula details: sum(SumMarkdownSalesDollars)]
-  attribute MarkdownSalesUnits "Markdown Sales Units" : Decimal [formula details: sum(SumMarkdownSalesUnits)]
-  attribute RegularSalesDollars "Regular Sales Dollars" : Decimal [formula details: sum(SumRegularSalesDollars)]
-  attribute RegularSalesUnits "Regular Sales Units" : Decimal [formula details: sum(SumRegularSalesUnits)]
-  attribute SalesPerSqFt "Sales Per Square Feet" : Decimal [formula details: sum(TotalSales) tag (name "expression" value "TotalSales / (count(Stores) * sum(SellingAreaSize))")]
-  attribute StoreCount "Store Count" : Integer [formula details: count(Stores)]
-  attribute TotalUnitsLastYear "Total Units Last Year" : Decimal [constraints (NotNull)]
-  attribute TotalUnitsThisYear "Total Units This Year" : Decimal [constraints (NotNull)]
-  attribute TotalSales "Total Sales" : Decimal [formula arithmetic (RegularSalesDollars + Sales.MarkdownSalesDollars)]
-  attribute TotalSalesLY "Total Sales Last Year" : Decimal [constraints (NotNull)]
-  attribute TotalSalesTY "Total Sales This Year" : Decimal [constraints (NotNull)]
-  attribute TotalSalesVar "Total Sales Variance" : Decimal [formula arithmetic (TotalSalesTY - TotalSalesLY)]
-  attribute TotalSalesVarPercentage "Total Sales Variance %" : Decimal [formula arithmetic ((TotalSalesVar / TotalSalesLY) * 100) constraints (NotNull)]
-  attribute AverageUnitPrice "Average Unit Price" : Decimal [formula arithmetic (SumRegularSalesDollars / SumRegularSalesUnits) constraints (NotNull) tag (name "expression" value "average(SumRegularSalesDollars / SumRegularSalesUnits)")]
-  attribute AverageUnitPriceLastYear "Average Unit Price Last Year" : Decimal [formula arithmetic (LastYearSales / TotalUnitsLastYear) constraints (NotNull) tag (name "expression" value "average(LastYearSales / TotalUnitsLastYear)")]
-  attribute AvgDollarPerUnitLastYear "Avg $/Unit LY" : Decimal [formula arithmetic (TotalSalesLY / TotalUnitsLastYear) constraints (NotNull)]
-  attribute AvgDollarPerUnitThisYear "Avg $/Unit TY" : Decimal [formula arithmetic (TotalSalesTY / TotalUnitsThisYear) constraints (NotNull)]
-  attribute GrossMarginLastYear "Gross Margin Last Year" : Decimal [formula arithmetic (LastYearSales - SumGrossMarginAmount) constraints (NotNull) tag (name "expression" value "sum(LastYearSales - SumGrossMarginAmount)")]
-  attribute GrossMarginLastYearPercentage "Gross Margin Last Year %" : Decimal [formula arithmetic ((GrossMarginLastYear / TotalSalesLY) * 100) constraints (NotNull)]
-  attribute GrossMarginThisYear "Gross Margin This Year" : Decimal [formula arithmetic (TotalSalesTY - SumGrossMarginAmount) constraints (NotNull) tag (name "expression" value "sum(TotalSalesTY - SumGrossMarginAmount)")]
-  attribute GrossMarginThisYearPercentage "Gross Margin This Year %" : Decimal [formula arithmetic ((GrossMarginThisYear / TotalSalesTY) * 100) constraints (NotNull)]
-  description "This fact table represents various sales metrics, providing insights into sales performance, margins, and trends."
-]
+DataEntity e_Patient "Patient" : Master : BI_Dimension [
+  attribute id "UUID" : UUID [constraints (PrimaryKey NotNull Unique)]
+  attribute nhs_number "NHS Number" : Integer [constraints (NotNull)]
+  attribute age "Age" : Integer [constraints (NotNull)]
+  attribute Name "Name" : String(50) [constraints (NotNull)]
+  attribute gender "Gender" : DataEnumeration Gender [constraints (NotNull)]
+  attribute residence "Residence" : _Dimension [constraints (NotNull ForeignKey(e_City))]
+  description "This dimension represents the details of a patient" ]
 
-DataEntityCluster dec_Stores : Transaction [
-    main Stores
-    uses Districts    
-]
+DataEntity e_Institution "Institution" : Master : BI_Dimension [
+  attribute id "UUID" : UUID [constraints (PrimaryKey NotNull Unique)]
+  attribute Code "Code" : String(50) [constraints (NotNull)]
+  attribute Name "Name" : String(50) [constraints (NotNull)]
+  attribute latitude "Latitude" : Decimal [constraints (NotNull)]
+  attribute longitude "Longitude" : Decimal [constraints (NotNull)]
+  attribute city "City" : _Dimension [constraints (NotNull ForeignKey(e_City))]
+  attribute type "Type" : DataEnumeration InstitutionTypes [constraints (NotNull)] ]
 
-DataEntityCluster dec_Sales : Transaction [
-    main Sales
-    uses Stores, Districts, _Time, Items
-]
+DataEntity e_RequestState "Request State" : Reference : BI_Dimension [
+  attribute id "UUID" : UUID [constraints (PrimaryKey NotNull Unique)]
+  attribute is_final "Is Final" : Boolean [constraints (NotNull)]
+  attribute is_initial "Is Initial" : Boolean [constraints (NotNull)]
+  attribute Name "Name" : DataEnumeration States [constraints (NotNull)]
+  description "This dimension represents the details of a request state" ]
 
-Actor a_Company_Data_Analyst : User [description "The company's data analyst"]
-Actor a_DM "Distric Manager" : User [description "The company's district manager"]
-Actor a_CFO "Chief Financial Officer" : User [description "The company'’'s Chief Financial Officer"]
+DataEntity e_Time "Time" : Reference: BI_Dimension [
+  attribute id "UUID" : UUID [constraints (PrimaryKey NotNull Unique)]
+  attribute date "Date" : Date [constraints (NotNull)]
+  attribute day "Day" : Integer [constraints (NotNull)]
+  attribute month "Month" : Integer [constraints (NotNull)]
+  attribute quarter "Quarter" : Integer [constraints (NotNull)]
+  attribute year "Year" : Integer [constraints (NotNull)]
+  description "This dimension represents the details of the time" ]
 
-UseCase uc_Analysis_Sales_National_Level_By_CFO : BI_Analysis [
-  actorInitiates a_CFO
-  dataEntity dec_Sales
+DataEntity e_AppointmentRequest "Appointment Request" : Transaction : BI_Fact [
+  attribute id "UUID" : UUID [constraints (PrimaryKey NotNull Unique)]
+  attribute institution "Institution" : _Dimension  [constraints (NotNull ForeignKey(e_Institution))]
+  attribute patient "Patient" : _Dimension [constraints (NotNull ForeignKey(e_Patient))]
+  attribute _state "Request State" : _Dimension [constraints (NotNull ForeignKey(e_RequestState))]
+  attribute scheduled_date "Scheduled Date" : _Dimension [constraints (NotNull ForeignKey(e_Time))]
+  attribute closed_date "Closed Date" : _Dimension [constraints (ForeignKey(e_Time))]
+  attribute closed "Is closed" : Boolean [constraints (NotNull)]
+  attribute maximum_response_time "Maximum Response Time" : Integer [constraints (NotNull)]
+  attribute actual_response_time "Actual Response Time" : Integer
+  attribute CountAppointments "Count of Appointments" : Integer [formula details: count (e_AppointmentRequest)]
+  attribute CountCancelledAppointments "Count of Cancelled Appointments" : Integer [formula details: count (if(e_AppointmentRequest.was_cancelled = True))] 
+  attribute CancellationRate "Cancellation Rate" : Decimal [formula arithmetic (CountCancelledAppointments / CountAppointments)]
+  attribute AvgWaitingTime "Average Waiting Time" : Decimal [formula details: average(actual_waiting_time))]
+  attribute MinDate "Minimum Date" : Date [formula details: min(time.date)]
+  attribute MaxDate "Maximum Date" : Date [formula details: max(time.date)] ]
 
-  actions BI_Slice, BI_Dice, BI_Rollup, BI_DrillDown
-  tag (name "BI-Action:BI_Slice:NationalSalesOverview" value "Dimensions:'_Time, Districts'")
-  tag (name "BI-Action:BI_Dice:SalesByItemCategoryAndTime" value "Dimensions:'_Time, Items'")
-  tag (name "BI-Action:BI_RollUp:SalesByDistrict" value "Dimensions:'Districts'")
-  tag (name "BI-Action:BI_DrillDown:SalesDetailsByStore" value "Dimensions:'Stores'")
+B.4. Data Entities Clusters:
 
-  description "Provides a comprehensive overview of sales and store data at a national level for the CFO"
-]
+DataEntityCluster dec_Appointments "Appointments Cluster" : Transaction [
+  main e_AppointmentRequest 
+  uses e_Time, e_Patient, e_Institution, e_City
+  description "Data entity cluster to represent the connections between the Appointments fact with the dimension" ]
 
-UseCase uc_Analysis_Sales_District_Level_By_DM : BI_Analysis [
-  actorInitiates a_DM
-  dataEntity dec_Sales
+Actor a_National_Level_Data_Analyst "National Level Data Analyst" : User [ description "User with permitions to visualise the application at a national level" ]
+Actor a_Institution_Manager "Institution Manager" : User [ description "User with permitions to visualise the application at an intitution level" ]
 
-  actions BI_Slice, BI_Dice, BI_Rollup, BI_DrillDown
+// Institution Page Use Cases
+UseCase uc_Analysis_Appointments_National_Level : BIInteraction : DataAnalysis [
+  actorInitiates a_National_Level_Data_Analyst
+  dataEntity dec_AppointmentRequests
 
-  tag (name "BI-Action:BI_Slice:DistrictSalesOverview" value "Dimensions:'_Time, Districts'")
-  tag (name "BI-Action:BI_Dice:SalesByItemInDistrict" value "Dimensions:'Districts, Items'")
-  tag (name "BI-Action:BI_RollUp:SalesSummaryByTimeInDistrict" value "Dimensions:'_Time, Districts'")
-  tag (name "BI-Action:BI_DrillDown:DetailedSalesByStoreInDistrict" value "Dimensions:'Stores, Districts'")
+  actions BI_Slice, BI_Dice, BI_Rollup, BI_DrillDown 
 
-  description "Enables the District Manager to analyse sales and store data at a district level"
-]
+  tag (name "BI-Action:BI_Slice:ScheduledAppointmentsInSpecificYear" value "Dimensions:'e_Time'")
+  tag (name "BI-Action:BI_Dice:ScheduledAppointmentsBySpecificCityAndYear" value "Dimensions:'e_Time, e_Institution, e_City'")
+  tag (name "BI-Action:BI_RollUp:AppointmentsByInstitutionCity" value "Dimensions:'e_Institution'")
+  tag (name "BI-Action:BI_RollUp:AppointmentsByInstitution" value "Dimensions:'e_Institution'")
 
-UseCase uc_Import_Last_Year_Financial_Data : BIInteraction : DataImport [
-  actorInitiates a_CFO
-  dataEntity dec_Sales
+  description "Displays the appointment data by institution at a national level" ]
 
-  actions BI_Import  
-]
-
-UseCase uc_ FilterSalesByDistrictManager : BIInteraction : DataQuerying [
-  actorInitiates a_Data_Analyst
-  dataEntity dec_Sales
+UseCase uc_Analysis_Appointments_Institution_Level : BIInteraction : DataAnalysis [
+  actorInitiates a_Institution_Level_Data_Analyst
+  dataEntity dec_AppointmentRequests
 
   actions BI_Slice
 
-  tag (name "BI-Action:BI_Slice: ScheduledAppointmentsInSpecificYear " value "Dimensions:'e_Districts'") 
-]
+  tag (name "BI-Action:BI_Slice:ScheduledAppointmentsInSpecificYear" value "Dimensions:'e_Time'")
 
-component fi_District_Manager_Filter "District Manager Filter" : Filter : Dropdown [
-  dataBinding Districts
-  
-  part DM "District Manager" : Field : Option [dataAttributeBinding Districts.DM]
+  description "Only displays the appointment data at a single institution level" ]
+// Patient Page Use Cases
+UseCase uc_AnalysisAppointmentsPatientOnNationalLevel : BIInteraction : DataAnalysis [
+  actorInitiates a_National_Level_Data_Analyst
+  dataEntity dec_AppointmentRequests
 
-  event e_ApplyFilter : Submit : Submit_Update [navigationFlowTo fi_District_Manager_Filter tag (name "DM Slice" value "Slice Districts by their district manager")]
-  event e_ResetFilter : Submit : Submit_Update [navigationFlowTo fi_District_Manager_Filter tag (name "Reset" value "Clear the district manager filter")]
-]
+  actions BI_Slice, BI_Dice, BI_Rollup, BI_DrillDown, BI_Pivot
 
-component fi_New_Stores_Name_Filter "New Stores Name Filter" : Filter : Dropdown [
-  dataBinding dec_Stores
-  
-  part StoreName "Store Name" : Field : Option [dataAttributeBinding Stores.Name]
+  tag (name "BI-Action:BI_Slice:ScheduledAppointmentsInSpecificYear" value "Dimensions:'e_Time'")
+  tag (name "BI-Action:BI_Dice:ScheduledAppointmentsBySpecificPatientResidenceCityAndYear" value "Dimensions:'e_Time, e_Patient, e_City'")
+  tag (name "BI-Action:BI_RollUp:AppointmentsByGender" value "Dimensions:'e_Patient'")
+  tag (name "BI-Action:BI_RollUp:AppointmentsByAge" value "Dimensions:'e_Patient'")
 
-  event e_ApplyFilter : Submit : Submit_Update [navigationFlowTo fi_New_Stores_Name_Filter tag (name "Stores Slice" value "Slice Stores by their name")]
-  event e_ResetFilter : Submit : Submit_Update [navigationFlowTo fi_New_Stores_Name_Filter tag (name "Reset" value "Clear the new stores filter")]
-]
+  description "Displays the appointment data by patient at a national level" ]
+ 
+UseCase uc_AnalysisAppointmentsInstitutionOnNationalLevel : BIInteraction : DataAnalysis [
+  actorInitiates a_Institution_Level_Data_Analyst
+  dataEntity dec_AppointmentRequests
 
-D.2. Cards:
+  actions BI_Slice, BI_Dice, BI_Rollup, BI_DrillDown, BI_Pivot
 
-component uiCo_New_Stores_Card "New Stores Card" : Card [
-  dataBinding dec_Stores
+  tag (name "BI-Action:BI_Slice:ScheduledAppointmentsInSpecificYear" value "Dimensions:'e_Time'")
+  tag (name "BI-Action:BI_Dice:ScheduledAppointmentsBySpecificPatientResidenceCityAndYear" value "Dimensions:'e_Time, e_Patient, e_City'")
+  tag (name "BI-Action:BI_RollUp:AppointmentsByGender" value "Dimensions:'e_Patient'")
+  tag (name "BI-Action:BI_RollUp:AppointmentsByAge" value "Dimensions:'e_Patient'")
+
+  description "Only displays the appointment data by patient at a single institution level" ]
+
+// Time Range Filter
+component uiCo_TimeFilter "Select Time Range" : Filter : Range [
+  dataBinding dec_AppointmentRequests
     
-  part NewStores "New Stores" : Field : Value [dataAttributeBinding Stores.NewStores]
+  part minDate "Min Date" : Field : Option [dataAttributeBinding e_AppointmentRequest.MinDate]
+  part maxDate "Max Date" : Field : Option [dataAttributeBinding e_AppointmentRequest.MaxDate]
+  // Submit Button
+  event e_ApplyFilter : Submit : Submit_Update [tag (name "Time Slice" value "Slice Appointments by the selected time range")]
+  event e_ResetFilter : Submit : Submit_Update [tag (name "Reset" value "Clear the time filter")] ]
 
-  event RefreshData : Submit : Submit_Update [tag (name "Refresh" value "Refresh the new stores count")]
+// Patient Table 
+component uiCo_PatientTable "Patient Details" : List : Table [
+  dataBinding dec_AppointmentRequests
+  // The data table columns
+  part id "ID" : Field : Column [dataAttributeBinding e_Patient.id]
+  part nhs_number "NHS Number" : Field : Column [dataAttributeBinding e_Patient.nhs_number]
+  part Name "Name" : Field : Column [dataAttributeBinding e_Patient.Name]
+  part gender "Gender" : Field : Column [dataAttributeBinding e_Patient.gender]
+  part CountAppointments "Number of Appointments" : Field : Column [dataAttributeBinding e_AppointmentRequest.CountAppointments] ]
+// Institution Table 
+component uiCo_InstitutionTable "Institution Details" : List : Table [
+  dataBinding dec_AppointmentRequests
+  // The table columns
+  part id "ID" : Field : Column [dataAttributeBinding e_Institution.id]
+  part Code "Code" : Field : Column [dataAttributeBinding e_Institution.Code]
+  part Name "Name" : Field : Column [dataAttributeBinding e_Institution.Name]
+  part latitude "Latitude" : Field : Column [dataAttributeBinding e_Institution.latitude]
+  part longitude "Longitude" : Field : Column [dataAttributeBinding e_Institution.longitude]
+  part city "City" : Field : Column [dataAttributeBinding e_Institution.city]
+  part AvgWaitingTime "Average Waiting Time" : Field : Column [dataAttributeBinding e_AppointmentRequest.AvgWaitingTime] 
 ]
 
-component uiCo_Total_Stores_Card "Total Stores Card" : Card [
-  dataBinding dec_Stores
-    
-  part TotalStores "Total Stores" : Field : Value [dataAttributeBinding Stores.TotalStores]
+// Bar Chart
+component uiCo_AgeBarChart "Age Distribution" : InteractiveChart : InteractiveBarChart [
+  dataBinding dec_AppointmentRequests
+  // The chart axes
+  part age "Age" : Field : X_Axis [dataAttributeBinding e_Patient.age]
+  part CountAppointments "Number of Appointments" : Field : Y_Axis [dataAttributeBinding e_AppointmentRequest.CountAppointments]
 
-  event RefreshData : Submit : Submit_Update [tag (name "Refresh" value "Refresh the total stores count")]
-]
-
-component uiCo_This_Year_Sales_by_Chain_PieChart "This Year Sales by Chain" : InteractiveChart : InteractivePieChart [
-  dataBinding dec_Sales
+  event TooltipAndHoverDetails : Other ]
+// Pie Chart
+component uiCo_GenderChart "Gender Distribution" : InteractiveChart : InteractivePieChart [
+  dataBinding dec_AppointmentRequests
   // The chart segments
-  part Chain "Chain" : Field : Label [dataAttributeBinding Stores.Chain]
-  part TotalSalesTY "Total Sales This Year" : Field : Value [dataAttributeBinding Sales.TotalSalesTY]
+  part gender "Gender" : Field : Label [dataAttributeBinding e_Patient.gender]
+  part numberOfAppointments "Number of Appointments" : Field : Value [dataAttributeBinding e_AppointmentRequest.CountAppointments]
 
-  event TooltipAndHoverDetails : Other
-]
-
-component uiCo_Total_Sales_Variance_by_FiscalMonth_and_District_Manager_BarChart : InteractiveChart : InteractiveBarChart [
-  dataBinding dec_Sales  
+  event TooltipAndHoverDetails : Other ]
+// Line Chart
+component uiCo_CancellationRateChart "Cancellation Rate by Institution" : InteractiveChart : InteractiveLineChart [
+  dataBinding dec_AppointmentRequests
   // The chart axes
-  part FiscalMonth "Fiscal Month" : Field : X_Axis [dataAttributeBinding Time.FiscalMonth]
-  part TotalSalesVariance "Total Sales Variance" : Field : Y_Axis [dataAttributeBinding Sales.TotalSalesVar]
-  part DM "District Manager" : Field : Legend [dataAttributeBinding Districts.DM]
+  part type "Institution Type" : Field : X_Axis [dataAttributeBinding e_Institution.type]
+  part CountAppointments "Number of Appointments" : Field : Y_Axis [dataAttributeBinding e_AppointmentRequest.CountAppointments]
 
-  event TooltipAndHoverDetails : Other
-  event DrillDown : Submit : Submit_Update [navigationFlowTo uiCo_Total_Sales_Variance_by_FiscalMonth_and_District_Manager_BarChart]
-]
-
-component uiCo_This_Year_Sales_by_PostalCode_and_Store_Type_Map : InteractiveChart : InteractiveGeographicalMap [
-  dataBinding dec_Sales  
-  // The map elements
-  part PostalCode "Postal Code" : Field : Latitude [dataAttributeBinding Stores.PostalCode]
-  part TotalSalesTY "Total Sales This Year" : Field : Longitude [dataAttributeBinding Sales.TotalSalesTY]
-  part StoreType "Store Type" : Field : Legend [dataAttributeBinding Stores.StoreType]
-
-  event ZoomAndPanUpdate : Submit : Submit_Update [navigationFlowTo uiCo_This_Year_Sales_by_PostalCode_and_Store_Type_Map]
-  event RealTimeDataUpdate : Submit : Submit_Update [navigationFlowTo uiCo_This_Year_Sales_by_PostalCode_and_Store_Type_Map]
-  event TooltipAndHoverDetails : Other
-]
-
-component uiCo_Total_Sales_Variance_Percentage_Sales_Per_Sq_Ft_and_This_Year_Sales_by_District_and_District_ScatterPlot : InteractiveChart : InteractiveScatterPlot [
-  dataBinding dec_Sales
+  event DrillDown : Submit : Submit_Update [navigationFlowTo uiCo_CancellationRateChart]
+  event RealTimeDataUpdate : Submit : Submit_Update [navigationFlowTo uiCo_CancellationRateChart]
+  event TooltipAndHoverDetails : Other ]
+// Scatter Plot
+component uiCo_PatientAppointmentScatter "Appointment Scatter Plot by Patient Residence" : InteractiveChart : InteractiveScatterPlot [
+  dataBinding dec_AppointmentRequests 
   // The chart axes
-  part SalesPerSqFt "Sales Per Sq Ft" : Field : X_Axis [dataAttributeBinding Sales.SalesPerSqFt]
-  part TotalSalesVariancePercentage "Total Sales Variance %" : Field : Y_Axis [dataAttributeBinding Sales.TotalSalesVarPercentage]
-  part District "District" : Field : Label [dataAttributeBinding Districts.District]
+  part CountAppointments "Number of Appointments" : Field : X_Axis [dataAttributeBinding e_AppointmentRequest.CountAppointments]
+  part AvgWaitingTime "Average Waiting Time" : Field : Y_Axis [dataAttributeBinding e_AppointmentRequest.AvgWaitingTime]
+  // The label
+  part residence "Patient Residence" : Field : Label [dataAttributeBinding e_Patient.residence]
 
-  event TooltipAndHoverDetails : Other
-  event DrillDown : Submit : Submit_Update [navigationFlowTo uiCo_Total_Sales_Variance_Percentage_Sales_Per_Sq_Ft_and_This_Year_Sales_by_District_and_District_ScatterPlot]
-]
+  event TooltipAndHoverDetails : Other ]
+// Location Map
+component uiCo_LocationMap "Appointments by Institution Locations" : InteractiveChart : InteractiveGeographicalMap [
+  dataBinding dec_AppointmentRequests
+  // The chart axes
+  part latitude "Latitude" : Field : Latitude [dataAttributeBinding e_Institution.latitude]
+  part longitude "Longitude" : Field : Longitude [dataAttributeBinding e_Institution.longitude]
+  // The value
+  part CountAppointments "Number of Appointments" : Field : Value [dataAttributeBinding e_AppointmentRequest.CountAppointments] 
 
-component uiCo_Total_Sales_Variance_Percentage_by_FiscalMonth_BarChart : InteractiveChart : InteractiveBarChart [
-  dataBinding dec_Sales
-  // Chart axes
-  part FiscalMonth "Fiscal Month" : Field : X_Axis [dataAttributeBinding _Time.FiscalMonth]
-  part TotalSalesVariancePercentage "Total Sales Variance %" : Field : Y_Axis [dataAttributeBinding Sales.TotalSalesVarPercentage]
-
-  event TooltipAndHoverDetails : Other
-  event DrillDown : Submit : Submit_Update [navigationFlowTo uiCo_Total_Sales_Variance_Percentage_by_FiscalMonth_BarChart]
-]
-
-component uiCo_This_Year_Sales_by_StoreNumberName_BarChart : InteractiveChart : InteractiveBarChart [
-  dataBinding dec_Sales
-  // Chart axes
-  part StoreNumberName "Store Number Name" : Field : X_Axis [dataAttributeBinding Stores.Name]
-  part TotalSalesTY "Total Sales This Year" : Field : Y_Axis [dataAttributeBinding Sales.TotalSalesTY]
-
-  event TooltipAndHoverDetails : Other
-  event DrillDown : Submit : Submit_Update [navigationFlowTo uiCo_This_Year_Sales_by_StoreNumberName_BarChart]
-]
-
-component uiCo_LastYearSalesandThisYearSalesbyQuarter : InteractiveChart : InteractiveAreaChart [
-  dataBinding dec_Sales
-  // Chart axes
-  part sales_date : Field : X_Axis [dataAttributeBinding e_Sales.ReportingPeriodID]
-  part lastYearSales : Field : Y_Axis [dataAttributeBinding e_Sales. Sales.LastYearSales]
-  part thisYearSales : Field : Y_Axis [dataAttributeBinding e_Sales. Sales.ThisYearSales]
-
-  event DrillDown : Submit : Submit_Update [navigationFlowTo uiCo_LastYearSalesandThisYearSalesbyQuarter]
+  event ZoomAndPanUpdate : Submit : Submit_Update [navigationFlowTo uiCo_CancellationRateChart]
+  event RealTimeDataUpdate : Submit : Submit_Update [navigationFlowTo uiCo_CancellationRateChart]
   event TooltipAndHoverDetails : Other ]
 
-component uiCo_Total_Sales_Variance_Percentage_Avg_Unit_TY_and_This_Year_Sales_by_Category_and_Category_ScatterPlot : InteractiveChart : InteractiveScatterPlot [
-  dataBinding dec_Sales  
-  // Chart axes
-  part AverageUnitPrice "Average Unit Price" : Field : X_Axis [dataAttributeBinding Sales.AverageUnitPrice]
-  part TotalSalesVariancePercentage "Total Sales Variance %" : Field : Y_Axis [dataAttributeBinding Sales.TotalSalesVarPercentage]
-  part Category "Category" : Field : Label [dataAttributeBinding Items.Category]
 
-  event TooltipAndHoverDetails : Other
-  event DrillDown : Submit : Submit_Update [navigationFlowTo uiCo_Total_Sales_Variance_Percentage_Avg_Unit_TY_and_This_Year_Sales_by_Category_and_Category_ScatterPlot]
+// Patient Overview Page
+UIContainer uiCo_PatientOverviewPage "Patient Overview Page" : Window : Page [
+  // Visual elements
+  component uiCo_PatientTable
+  component uiCo_GenderChart
+  component uiCo_AgeBarChart
+  component uiCo_PatientAppointmentScatter
+  // Filters
+  component uiCo_TimeFilter
+  // Buttons 
+  event ev_InstitutionPageButton : Submit : Submit_Back [navigationFlowTo uiCo_InstitutionOverviewPage]
 ]
-
-component uiCo_This_Year_Sales_by_City_and_Chain_Map : InteractiveChart : InteractiveGeographicalMap [
-  dataBinding dec_Sales
-  // Chart layers
-  part City "City" : Field : Location [dataAttributeBinding Stores.CityName]
-  part Chain "Chain" : Field : Legend [dataAttributeBinding Stores.Chain]
-  part ThisYearSales "This Year Sales" : Field : Value [dataAttributeBinding Sales.TotalSalesTY]
-
-  event ZoomAndPanUpdate : Submit : Submit_Update [navigationFlowTo uiCo_This_Year_Sales_by_City_and_Chain_Map]
-  event RealTimeDataUpdate : Submit : Submit_Update [navigationFlowTo uiCo_This_Year_Sales_by_City_and_Chain_Map]
-  event TooltipAndHoverDetails : Other
-]
-
-component uiCo_Open_Store_Count_by_Open_Month_and_Chain_BarChart : InteractiveChart : InteractiveBarChart [
-  dataBinding dec_Sales
-  // Chart axes
-  part OpenMonth "Open Month" : Field : X_Axis [dataAttributeBinding _Time.Month]
-  part Chain "Chain" : Field : Y_Axis [dataAttributeBinding Stores.Chain]
-  part OpenStoreCount "Open Store Count" : Field : Y_Axis [dataAttributeBinding Stores.OpenStoreCount]
-
-  event TooltipAndHoverDetails : Other
-  event DrillDown : Submit : Submit_Update [navigationFlowTo uiCo_Open_Store_Count_by_Open_Month_and_Chain_BarChart]
-]
-
-component uiCo_Sales_Per_Sq_Ft_by_Name_BarChart : InteractiveChart : InteractiveBarChart [
-  dataBinding dec_Sales
-  // Chart axes
-  part StoreName "Store Name" : Field : X_Axis [dataAttributeBinding Stores.Name]
-  part SalesPerSqFt "Sales Per Sq Ft" : Field : Y_Axis [dataAttributeBinding Sales.SalesPerSqFt]
-
-  event TooltipAndHoverDetails : Other
-  event DrillDown : Submit : Submit_Update [navigationFlowTo uiCo_Sales_Per_Sq_Ft_by_Name_BarChart]
-]
-
-component uiCo_This_Year_Sales_by_FiscalMonth_LineChart : InteractiveChart : InteractiveLineChart [
-  dataBinding dec_Sales
-  // Chart axes
-  part FiscalMonth "Fiscal Month" : Field : X_Axis [dataAttributeBinding _Time.FiscalMonth]
-  part ThisYearSales "This Year Sales" : Field : Y_Axis [dataAttributeBinding Sales.TotalSalesTY]
-
-  event TooltipAndHoverDetails : Other
-  event RealTimeDataUpdate : Submit : Submit_Update [navigationFlowTo uiCo_This_Year_Sales_by_FiscalMonth_LineChart]
-]
-
-UIContainer page_Overview "Overview" : Window : Page [
-    // Visual elements
-    component uiCo_This_Year_Sales_by_Chain_PieChart
-    component uiCo_New_Stores_Card
-    component uiCo_Total_Stores_Card
-    component uiCo_Total_Sales_Variance_by_FiscalMonth_and_District_Manager_BarChart
-    component uiCo_This_Year_Sales_by_PostalCode_and_Store_Type_Map
-    component uiCo_Total_Sales_Variance_Percentage_Sales_Per_Sq_Ft_and_This_Year_Sales_by_District_and_District_ScatterPlot
-]
-
-UIContainer page_District_Monthly_Sales "Distric Monthly Sales" : Window : Page [
-    // Visual elements
-    component uiCo_Total_Sales_Variance_Percentage_by_FiscalMonth_BarChart
-    component uiCo_This_Year_Sales_by_StoreNumberName_BarChart
-    component uiCo_Last_Year_Sales_and_This_Year_Sales_by_FiscalMonth_AreaChart
-    component uiCo_Total_Sales_Variance_Percentage_Avg_Unit_TY_and_This_Year_Sales_by_Category_and_Category_ScatterPlot
-    // Filter
-    component fi_District_Manager_Filter
-]
-
-UIContainer page_New_Stores "New Stores" : Window : Page [
-    // Visual elements
-    component uiCo_This_Year_Sales_by_City_and_Chain_Map
-    component uiCo_Open_Store_Count_by_Open_Month_and_Chain_BarChart
-    component uiCo_Sales_Per_Sq_Ft_by_Name_BarChart
-    component uiCo_This_Year_Sales_by_FiscalMonth_LineChart
-    // Filter
-    component fi_New_Stores_Name_Filter
+// Institution Overview Page
+UIContainer uiCo_InstitutionOverviewPage "Institution Overview Page" : Window : Page [
+  // Visual elements
+  component uiCo_InstitutionTable
+  component uiCo_CancellationRateChart
+  component uiCo_LocationMap 
+  // Filters
+  component uiCo_TimeFilter 
+  // Buttons
+  event ev_PatientPageButton : Submit : Submit_Back [navigationFlowTo uiCo_PatientOverviewPage]
 ]
