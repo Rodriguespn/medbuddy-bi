@@ -2,45 +2,57 @@ Package bi
 
 System bi_types: Application [ isReusable ] 
 
-/* Data Entitites SubTypes */
-DataEntitySubType BI_Dimension [description "Dimension data entity sub type"]
-DataEntitySubType BI_Fact [description "Fact data entity sub type"]
+// BI-Extensions.asl
+// A) Data Entities SubTypes
 
-/* Data Entities Attribute Types */
+DataEntitySubType BI_Dimension
+DataEntitySubType BI_Fact
+
+// B) Data Entities Attribute Types
+
 DataAttributeType UUID 
-DataAttributeType _Dimension [description "Used to reference a Dimension on a data entity attribute"]
+DataAttributeType _Dimension
 
-/* UIContainers SubTypes */
+// C) UIContainers SubTypes
+
 UIContainerSubType Dashboard 
 UIContainerSubType Page 
 
-/* UIComponents Types */
+// D) UIComponents Types
+
 UIComponentType Card
-UIComponentType InteractiveChart
+UIComponentType Chart
 UIComponentType Filter
 
-/*UIComponents Sub Types*/
-// Tables
+// E) UIComponents Sub Types
+
+// E.1) Tables
+
 UIComponentSubType Table
 
-// Charts
-UIComponentSubType InteractiveLineChart
-UIComponentSubType InteractivePieChart
-UIComponentSubType InteractiveBarChart
-UIComponentSubType InteractiveAreaChart
-UIComponentSubType InteractiveScatterPlot
-UIComponentSubType InteractiveGeographicalMap
+// E.2) Charts
 
-// Filters
+UIComponentSubType LineChart
+UIComponentSubType PieChart
+UIComponentSubType BarChart
+UIComponentSubType AreaChart
+UIComponentSubType ScatterPlot
+UIComponentSubType GeographicalMap
+
+// E.3) Filters
+
 UIComponentSubType Dropdown
 UIComponentSubType Range
 UIComponentSubType Search
 
-/* UIComponents Parts Sub Types */
-// Tables
+// F) UIComponents Parts Sub Types
+
+// F.1) Tables
+
 UIComponentPartSubType Column
 
-// Charts
+// F.2) Charts
+
 UIComponentPartSubType X_Axis
 UIComponentPartSubType Y_Axis
 UIComponentPartSubType Value
@@ -51,15 +63,21 @@ UIComponentPartSubType Location
 UIComponentPartSubType Longitude
 UIComponentPartSubType Latitude
 
-// Filters
+// F.3) Filters
+
 UIComponentPartSubType Option
 
-/* OLAP Operations */
-ActionType BI_Slice [ description "This is a Slice operation"]
-ActionType BI_Dice [ description "This is a Dice operation"]
-ActionType BI_DrillDown [ description "This is a Drill-down operation"]
-ActionType BI_Rollup [ description "This is a Roll-up Operation"]
-ActionType BI_Pivot [ description "This is a Pivot operation"]
+// G) OLAP Operations
+ActionType BI_Slice
+ActionType BI_Dice
+ActionType BI_DrillDown
+ActionType BI_Rollup
+ActionType BI_Pivot
 
-/* Use Cases Types */
-UseCaseType BI_Analysis [ description "Represents a data analytical use case"]
+// H) Use Case Types
+
+UseCaseType BIOperation
+UseCaseSubType DataQuerying
+UseCaseSubType DataReport
+UseCaseSubType DataImport
+UseCaseSubType DataExport
