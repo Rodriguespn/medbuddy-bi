@@ -2,7 +2,6 @@ Package bi
 
 System bi_types: Application [ isReusable ] 
 
-// BI-Extensions.asl
 // A) Data Entities SubTypes
 
 DataEntitySubType BI_Dimension
@@ -10,8 +9,8 @@ DataEntitySubType BI_Fact
 
 // B) Data Entities Attribute Types
 
-DataAttributeType UUID 
-DataAttributeType _Dimension
+DataAttributeType UUID [description "Universal Unique Identifier data type"]
+DataAttributeType _Dimension [description "Used to reference a Dimension on a data entity attribute"]
 
 // C) UIContainers SubTypes
 
@@ -26,11 +25,11 @@ UIComponentType Filter
 
 // E) UIComponents Sub Types
 
-// E.1) Tables
+// E.1) Table
 
 UIComponentSubType Table
 
-// E.2) Charts
+// E.2) Chart
 
 UIComponentSubType LineChart
 UIComponentSubType PieChart
@@ -39,7 +38,7 @@ UIComponentSubType AreaChart
 UIComponentSubType ScatterPlot
 UIComponentSubType GeographicalMap
 
-// E.3) Filters
+// E.3) Filter
 
 UIComponentSubType Dropdown
 UIComponentSubType Range
@@ -47,11 +46,11 @@ UIComponentSubType Search
 
 // F) UIComponents Parts Sub Types
 
-// F.1) Tables
+// F.1) Table
 
 UIComponentPartSubType Column
 
-// F.2) Charts
+// F.2) Chart
 
 UIComponentPartSubType X_Axis
 UIComponentPartSubType Y_Axis
@@ -63,7 +62,7 @@ UIComponentPartSubType Location
 UIComponentPartSubType Longitude
 UIComponentPartSubType Latitude
 
-// F.3) Filters
+// F.3) Filter
 
 UIComponentPartSubType Option
 
